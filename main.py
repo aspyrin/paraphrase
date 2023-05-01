@@ -15,9 +15,9 @@ async def root(tree: str, limit: int = 20):
     """
     GET, function
     query parameters:
-        tree: str (required) – синтаксичне дерево у вигляді строки
-        limit: int (optional , default: 20) - максимальна кількість перефразованих текстів, що треба повернути
-    response: список перефразованих дерев в форматі JSON
+        tree: str (required) – syntax tree in the form of a string
+        limit: int (optional , default: 20) - the maximum number of paraphrased texts to be returned
+    response: a list of paraphrased trees in JSON format
     """
 
     swapping_list: List[SwappingGroup] = []
@@ -40,11 +40,13 @@ async def root(tree: str, limit: int = 20):
     # get paraphrases
     paraphrase = create_new_paraphrase(tree, swapping_list, limit)
 
-    # create response and return
+    # convert to JSON answer
     answer_dict = {
         "paraphrases": paraphrase,
     }
     answer_json = json.dumps(answer_dict, indent=4)
+
+    # create response and return
     response = responses.Response(content=answer_json)
     response.headers['content-type'] = 'application/json'
 

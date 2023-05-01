@@ -37,7 +37,7 @@ class SwappingGroup:
 
 def make_tree_structure(input_tree: Tree) -> List[NodeObject]:
     """
-    The function create List[NodeObject] from ParentedTree
+    The function create List[NodeObject] from Tree
     :param input_tree: Tree
     :return: List[NodeObject]
     """
@@ -127,11 +127,13 @@ def all_choices_count(swapping_list: List[SwappingGroup]) -> int:
 
 def create_new_paraphrase(tree: str, swapping_list: List[SwappingGroup], limit: int) -> List[Dict[str, str]]:
     """
-    The function creates and returns a new tree, using swapping_list to permutate branches,
+    The function creates and returns a new trees to List[Dict[str, str]], using swapping_list to permutate branches.
+    The number of generated trees is limited by the limit pardm or the maximum number of combinations is returned
+    (all_choices_count(swapping_list))
     :param tree: str
     :param swapping_list: List[SwappingGroup]
     :param limit: int
-    :return: List[str]
+    :return: List[Dict[str, str]]
     """
 
     output_trees: List[Dict[str, str]] = []
@@ -143,16 +145,17 @@ def create_new_paraphrase(tree: str, swapping_list: List[SwappingGroup], limit: 
 
     if swapping_list:
 
-        # in cycle (while < limit or if no variants)
+        # in cycle (while < limit)
         while len(output_trees) < limit:
 
+            #  if the maximum value of possible combinations is reached -> out from cycle
             if len(output_trees) == all_choices_count(swapping_list):
                 break
 
-            # ============================================================
+            # final dict
             values_mapping: Dict[str, str] = {}
 
-            # fill source values in values_mapping (keys)
+            # to fill source values in values_mapping (keys)
             for sg in swapping_list:
                 for n in sg.nodes_group:
                     values_mapping[str(n.value)] = ""
@@ -165,13 +168,13 @@ def create_new_paraphrase(tree: str, swapping_list: List[SwappingGroup], limit: 
                 for n in sg.nodes_group:
                     new_values_list.append(str(n.value))
 
-            # fill values_mapping mixed values
+            # to fill replace values in values_mapping (values)
             counter: int = 0
             for key in values_mapping:
                 values_mapping[key] = new_values_list[counter]
                 counter += 1
 
-            # create new paraphrase
+            # create new paraphrase (found and replace values used values_mapping)
             updated_string = tree
             for search_value, replace_value in values_mapping.items():
                 marked_replace_value = replace_value.replace(replace_value[0], "(@@@ ", 1)
@@ -184,16 +187,17 @@ def create_new_paraphrase(tree: str, swapping_list: List[SwappingGroup], limit: 
             # delete spaces
             updated_string = updated_string.lstrip()
 
-            # pack to dict
+            # pack new paraphrase to dict
             out_dict = {
                 "tree": updated_string
             }
 
-            # if it is equal
+            # if new paraphrase is exist in final dict, or it is equal original tree -> don't append
+            # (because when using a randomizer, there may be duplicate)
             if out_dict == in_dict or out_dict in output_trees:
                 continue
             else:
-                # append new paraphrase to output_trees list
+                # append new paraphrase to final dict
                 output_trees.append(out_dict)
 
     return output_trees
